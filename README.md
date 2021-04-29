@@ -18,27 +18,34 @@ This file needs some modifications:
   docker-compose-up -d
 ```
 
-2. Install the connector libraries in Kafka Connect service (it's necessary restart Kafka Connect service)
+2. Create a new database (inventory) and associated collection (products) in MongoDB.
+
+3. Install the connector libraries in Kafka Connect service (it's necessary restart Kafka Connect service)
 ```
   docker exec -it connect confluent-hub install mongodb/kafka-connect-mongodb:1.5.0 (MONGODB)
   docker exec -it connect confluent-hub install debezium/debezium-connector-mysql:1.5.0 (MySQL)
 ```
 
-3. Register the MySQL connector in Kafka Connect service [MySQL connector configuration file](connectors/source-mysql-connector.json)
+4. Register the MySQL connector in Kafka Connect service [MySQL connector configuration file](connectors/source-mysql-connector.json)
 ```
   curl -s -X POST -H "Accept:application/json" -H "Content-Type:application/json" localhost:8083/connectors/ -d @source-mysql-connector.json
 ```
 
-4. Register the MongoDB connector in Kafka Connect service [MongoDB connector configuration file](connectors/sink-mongodb-connector.json)
+5. Register the MongoDB connector in Kafka Connect service [MongoDB connector configuration file](connectors/sink-mongodb-connector.json)
 ```
   curl -s -X POST -H "Accept:application/json" -H "Content-Type:application/json" localhost:8083/connectors/ -d @sink-mongodb-connector.json
 ```
 
 ## Process events with KSQL
+
+This STREAM processes the events sent by debezium.
+
 ```
   CREATE STREAM S_PRODUCTS_FROM_KAFKA (SCHEMA STRUCT<PAYLOAD STRUCT<ID int>> KEY,PAYLOAD STRUCT<BEFORE STRUCT<ID int>, AFTER STRUCT<ID int, NAME varchar, DESCRIPTION varchar, WEIGHT double>, OP varchar>) 
   WITH (KAFKA_TOPIC='dbserver1.inventory.products', KEY_FORMAT='JSON', VALUE_FORMAT='JSON');
 ```
+
+This STREAM prepares the data to inject the MongoDB connector to send data to MongoDB
 ```
 CREATE STREAM S_PRODUCTS_SINK_MONGODB WITH (KAFKA_TOPIC='products_sink_mongodb') AS
 SELECT 
