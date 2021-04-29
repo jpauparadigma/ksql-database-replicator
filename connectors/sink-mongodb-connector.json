@@ -1,0 +1,17 @@
+{
+  "name": "mongo-sink-product",
+  "config": {
+    "topics": "products_sink_mongodb",
+    "connection.uri": "mongodb://admin:admin1@mongo:27017",
+    "database": "inventory",
+    "collection": "products",
+    "post.processor.chain": "com.mongodb.kafka.connect.sink.processor.DocumentIdAdder",
+    "connector.class": "com.mongodb.kafka.connect.MongoSinkConnector",
+    "key.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "key.converter.schemas.enable": "false",
+    "value.converter": "org.apache.kafka.connect.json.JsonConverter",
+    "value.converter.schemas.enable": "false",
+    "document.id.strategy": "com.mongodb.kafka.connect.sink.processor.id.strategy.FullKeyStrategy",
+    "delete.on.null.values": "true"
+  }
+}
